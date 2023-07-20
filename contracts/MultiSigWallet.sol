@@ -122,7 +122,11 @@ contract MultiSigWallet {
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
 
-    function receive() external payable {
+    receive() external payable {
+        emit Deposit(msg.sender,msg.value,address(this).balance);
+    }
+
+    fallback() external payable {
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
 }
