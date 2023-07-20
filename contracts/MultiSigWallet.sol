@@ -96,21 +96,17 @@ contract MultiSigWallet {
             0,
             false
         ));
-        emit createdWithdrawTx(
+        emit CreatedWithdrawTx(
             msg.sender,
             transactionIndex,
             _to,
             _amount);
     }
+
 }
 
 
-    /* TODO: Create a function called "createWithdrawTx" that is used to initiate the withdrawal 
-             of ETH from the multisig smart contract wallet and does the following:
-             1) Ensures that only one of the owners can call this function
-             2) Create the new withdraw transaction(to, amount, approvals, sent) and add it to the list of withdraw transactions
-             3) Emit an event called "CreateWithdrawTx"
-    */
+
     /* TODO: Create a function called "approveWithdrawTx" that is used to approve the withdraw a particular transaction
              based on the transactionIndex(this is the index of the array of withdraw transactions)
              This function does the following:
@@ -131,4 +127,3 @@ contract MultiSigWallet {
     */
     // TODO: You may also want to implement a special function called "receive" to handle the receiving of ETH if you choose
     // modifier onlyOwner()
-}
