@@ -117,11 +117,17 @@ contract MultiSigWallet {
             emit ApprovedWithdrawTx(msg.sender, _transactionIndex);
         }
     }
+
+    function deposit() external payable  {
+        emit Deposit(msg.sender,msg.value,address(this).balance);
+    }
+
+    function receive() external payable {
+        emit Deposit(msg.sender,msg.value,address(this).balance);
+    }
 }
 
 
-/* TODO: Create a function called "deposit" that will handle the receiving of ETH to this multisig wallet 
-             Make sure to emit an event called "Deposit"
-    */
+
 // TODO: You may also want to implement a special function called "receive" to handle the receiving of ETH if you choose
 // modifier onlyOwner()
