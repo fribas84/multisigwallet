@@ -1,15 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-/* TODO: Use custom error type to define an error called "TxNotExists" that takes the argument "transactionIndex"
-         This error will be thrown whenever the user tries to approve a transaction that does not exist.
-*/
-/* TODO: Use custom error type to define an error called "TxAlreadyApproved" that takes the argument "transactionIndex"
-         This error will be thrown whenever the user tries to approve a transaction that has already been approved.
-*/
-/* TODO: Use custom error type to define an error called "TxAlreadySent" that takes the argument "transactionIndex"
-         This error will be thrown whenever the user tries to approve a transaction that has already been sent.
-*/
+
+/// This error will be thrown whenever the user tries to approve a transaction that does not exist.
+/// @param transactionIndex.
+error TxNotExists(uint256 transactionIndex);
+
+/// This error will be thrown whenever the user tries to approve a transaction that has already been approved.
+/// @param transactionIndex.
+error TxAlreadyApproved(uint256 transactionIndex);
+
+/// This error will be thrown whenever the user tries to approve a transaction that has already been sent.
+/// @param transactionIndex.
+error TxAlreadySent(uint256 transactionIndex);
 
 contract MultiSigWallet {
     // TODO: Declare an event called "Deposit" that will be emitted whenever the smart contract receives some ETH
