@@ -42,7 +42,8 @@ contract MultiSigWallet {
     }
 
     mapping(uint => mapping(address => bool)) isApproved;
-    WidthdrawTxStruct[] private WidthdrawTxs;
+
+    WidthdrawTxStruct[] private widthdrawTxs;
 
     constructor(address[] memory _owners, uint256 _quorumRequired) {
         require(_owners.length > 0, "At least one owner is required");
@@ -59,9 +60,30 @@ contract MultiSigWallet {
         }
         quorumRequired = _quorumRequired;
     }
+
+    modifier onlyOwner(){
+        require(isOwner[msg.sender],"not owner");
+        _;
+    }
     
-    // TODO: Declare a function modifier called "onlyOwner" that ensures that the function caller is one of the owners of the wallet
-    // TODO: Declare a function modifier called "transactionExists" that ensures that transaction exists in the list of withdraw transactions
-    // TODO: Declare a function modifier called "transactionNotApproved" that ensures that transaction has not yet been approved
+    modifier transactionExists(uint256 _transactionIndex){
+        if(_transactionIndex > widthdrawTxs.length){
+            revert TxNotExists(_transactionIndex);
+        }
+        _;
+    }
+
+    modifier transactionNotApproved(uint256 _transactionIndex){
+        if(isApproved[_transactionIndex][msg.sender]){
+            revert TxAlreadyApproved(_transactionIndex);
+        }
+        _;
+    }
     // TODO: Declare a function modifier called "transactionNotSent" that ensures that transaction has not yet been sent
+    modifier transactionNotSent(uint256 _transactionIndex){
+        if(widthdrawTxs[_transactionIndex].sent){
+            revert TxAlreadySent(_transactionIndex);
+        }
+        _;
+    }
 }
