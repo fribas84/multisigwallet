@@ -14,23 +14,30 @@ error TxAlreadyApproved(uint256 transactionIndex);
 error TxAlreadySent(uint256 transactionIndex);
 
 contract MultiSigWallet {
-    event Deposit(address indexed origin, uint256 amount);
-    event CreatedWithdrawTx(uint256 indexed transactionIndex, uint256 amount);
-    event ApprovedWithdrawTx(uint256 indexed trasactionIndex);
+    event Deposit(address indexed sender, uint256 amount, uint256 balance);
+    
+    event CreatedWithdrawTx(
+        address indexed owner,
+        uint256 indexed transactionIndex,
+        address indexed to,
+        uint256 amount);
 
-    address[] private owners;
-    mapping(address => bool) isOwner;
+    event ApprovedWithdrawTx(address indexed owner, uint256 indexed trasactionIndex);
 
-    uint256 private quorumRequired = 2;
+    address[] public owners;
+
+    mapping(address => bool) public isOwner;
+
+    uint256 public quorumRequired = 2;
 
     struct WidthdrawTxStruct{
         address to;
         uint256 amount;
-        address[] approvals;
+        uint approvals;
         bool sent;
     }
 
-    mapping(uint=>mapping(address=>bool)) isApproved;
-    WidthdrawTxStruct[] private WidthdrawTx;
+    mapping(uint => mapping(address => bool)) isApproved;
+    WidthdrawTxStruct[] private WidthdrawTxs;
 
 }
