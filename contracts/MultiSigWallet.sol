@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-
 /// This error will be thrown whenever the user tries to approve a transaction that does not exist.
 /// @param transactionIndex.
 error TxNotExists(uint256 transactionIndex);
@@ -15,27 +14,23 @@ error TxAlreadyApproved(uint256 transactionIndex);
 error TxAlreadySent(uint256 transactionIndex);
 
 contract MultiSigWallet {
-    // TODO: Declare an event called "Deposit" that will be emitted whenever the smart contract receives some ETH
-    /* TODO: Declare an event called "CreateWithdrawTx" that will be emitted whenever one of the owners tries to
-             initiates a withdrawal of ETH from the smart contract
-    */
-    /* TODO: Declare an event called "ApproveWithdrawTx" that will be emitted whenever one of the owners tries to
-             approve an existing withdrawal transaction
-    */
-    // TODO: Declare an array to keep track of owners
-    /* TODO: Declare a mapping called "isOwner" from address -> bool that will let us know whether a praticular address is one of the
-             owners of the multisig smart contract wallet
-    */
-    // TODO: Initialize an integer called "quorumRequired" to keep track of the total number of quorum required to approve a withdraw transaction
-    /* TODO: Declare a struct called "WithdrawTx" that will be used to keep track of withdraw transaction that owners create. This
-             struct will define four properties:
-             1) Keep track of the receiver address called "to"
-             2) Keep track of the amount of ETH to be withdrawn called "amount"
-             3) Keep track of the current number of quorum reached called "approvals"
-             4) Keep track of the status of the transaction whether it has been sent called "sent"
-    */
-    /* TODO: Declare a mapping called "isApproved" that will keep track of whether a particular withdraw transaction has
-             already been approved by the current caller. This is a mapping from transaction index => owner => bool
-    */
-    // TODO: Declare an array of WithdrawTxstruct to keep track of the list of withdrawal transactions for this multisig wallet
+    event Deposit(address indexed origin, uint256 amount);
+    event CreatedWithdrawTx(uint256 indexed transactionIndex, uint256 amount);
+    event ApprovedWithdrawTx(uint256 indexed trasactionIndex);
+
+    address[] private owners;
+    mapping(address => bool) isOwner;
+
+    uint256 private quorumRequired = 2;
+
+    struct WidthdrawTxStruct{
+        address to;
+        uint256 amount;
+        address[] approvals;
+        bool sent;
+    }
+
+    mapping(uint=>mapping(address=>bool)) isApproved;
+    WidthdrawTxStruct[] private WidthdrawTx;
+
 }
