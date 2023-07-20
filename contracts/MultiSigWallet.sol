@@ -61,32 +61,6 @@ contract MultiSigWallet {
         quorumRequired = _quorumRequired;
     }
 
-    modifier onlyOwner() {
-        require(isOwner[msg.sender], "not owner");
-        _;
-    }
-
-    modifier transactionExists(uint256 _transactionIndex) {
-        if (_transactionIndex > widthdrawTxs.length) {
-            revert TxNotExists(_transactionIndex);
-        }
-        _;
-    }
-
-    modifier transactionNotApproved(uint256 _transactionIndex) {
-        if (isApproved[_transactionIndex][msg.sender]) {
-            revert TxAlreadyApproved(_transactionIndex);
-        }
-        _;
-    }
-    // TODO: Declare a function modifier called "transactionNotSent" that ensures that transaction has not yet been sent
-    modifier transactionNotSent(uint256 _transactionIndex) {
-        if (widthdrawTxs[_transactionIndex].sent) {
-            revert TxAlreadySent(_transactionIndex);
-        }
-        _;
-    }
-
     function createdWithdrawTx(
         address _to,
         uint256 _amount
@@ -129,9 +103,30 @@ contract MultiSigWallet {
     fallback() external payable {
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
+
+        modifier onlyOwner() {
+        require(isOwner[msg.sender], "not owner");
+        _;
+    }
+
+    modifier transactionExists(uint256 _transactionIndex) {
+        if (_transactionIndex > widthdrawTxs.length) {
+            revert TxNotExists(_transactionIndex);
+        }
+        _;
+    }
+
+    modifier transactionNotApproved(uint256 _transactionIndex) {
+        if (isApproved[_transactionIndex][msg.sender]) {
+            revert TxAlreadyApproved(_transactionIndex);
+        }
+        _;
+    }
+    // TODO: Declare a function modifier called "transactionNotSent" that ensures that transaction has not yet been sent
+    modifier transactionNotSent(uint256 _transactionIndex) {
+        if (widthdrawTxs[_transactionIndex].sent) {
+            revert TxAlreadySent(_transactionIndex);
+        }
+        _;
+    }
 }
-
-
-
-// TODO: You may also want to implement a special function called "receive" to handle the receiving of ETH if you choose
-// modifier onlyOwner()
