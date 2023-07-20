@@ -61,69 +61,67 @@ contract MultiSigWallet {
         quorumRequired = _quorumRequired;
     }
 
-    modifier onlyOwner(){
-        require(isOwner[msg.sender],"not owner");
+    modifier onlyOwner() {
+        require(isOwner[msg.sender], "not owner");
         _;
     }
-    
-    modifier transactionExists(uint256 _transactionIndex){
-        if(_transactionIndex > widthdrawTxs.length){
+
+    modifier transactionExists(uint256 _transactionIndex) {
+        if (_transactionIndex > widthdrawTxs.length) {
             revert TxNotExists(_transactionIndex);
         }
         _;
     }
 
-    modifier transactionNotApproved(uint256 _transactionIndex){
-        if(isApproved[_transactionIndex][msg.sender]){
+    modifier transactionNotApproved(uint256 _transactionIndex) {
+        if (isApproved[_transactionIndex][msg.sender]) {
             revert TxAlreadyApproved(_transactionIndex);
         }
         _;
     }
     // TODO: Declare a function modifier called "transactionNotSent" that ensures that transaction has not yet been sent
-    modifier transactionNotSent(uint256 _transactionIndex){
-        if(widthdrawTxs[_transactionIndex].sent){
+    modifier transactionNotSent(uint256 _transactionIndex) {
+        if (widthdrawTxs[_transactionIndex].sent) {
             revert TxAlreadySent(_transactionIndex);
         }
         _;
     }
 
-    function createdWithdrawTx(address _to, uint256 _amount) external onlyOwner {
-        require(_amount>0,"invalid amount to withdraw");
+    function createdWithdrawTx(
+        address _to,
+        uint256 _amount
+    ) external onlyOwner {
+        require(_amount > 0, "invalid amount to withdraw");
         uint256 transactionIndex = widthdrawTxs.length;
-        widthdrawTxs.push(WidthdrawTxStruct(
-            _to,
-            _amount,
-            0,
-            false
-        ));
-        emit CreatedWithdrawTx(
-            msg.sender,
-            transactionIndex,
-            _to,
-            _amount);
+        widthdrawTxs.push(WidthdrawTxStruct(_to, _amount, 0, false));
+        emit CreatedWithdrawTx(msg.sender, transactionIndex, _to, _amount);
     }
 
+    function approveWithdrawTx(
+        uint256 _transactionIndex
+    ) 
+        external
+        onlyOwner
+        transactionExists(_transactionIndex)
+        transactionNotApproved(_transactionIndex)
+        transactionNotSent(_transactionIndex)
+
+    {
+        WidthdrawTxStruct storage widthdrawTx = widthdrawTxs[_transactionIndex];
+        widthdrawTx.approvals +=1;
+        isApproved[_transactionIndex][msg.sender] = true;
+        if(widthdrawTx.approvals >= quorumRequired){
+            widthdrawTx.sent = true;
+            (bool success, ) = widthdrawTx.to.call{value: widthdrawTx.amount}("");
+            require(success,"transaction failed");
+            emit ApprovedWithdrawTx(msg.sender, _transactionIndex);
+        }
+    }
 }
 
 
-
-    /* TODO: Create a function called "approveWithdrawTx" that is used to approve the withdraw a particular transaction
-             based on the transactionIndex(this is the index of the array of withdraw transactions)
-             This function does the following:
-             1) Ensures that only one of the owners can call this function
-             2) Ensures that the withdraw transaction exists in the array of withdraw transactions
-             3) Ensures that the withdraw transaction has not been approved yet
-             4) Ensures that the withdraw transaction has not been sent yet 
-             5) Incremement the number of approvals for the given transaction
-             6) Set the value of "isApproved" to be true for this transaction and for this caller
-             7) If the numhber of approvals is greater than or equal to the number of quorum required, do the following:
-                  - Set the value of "sent" of this withdraw transaction to be true
-                  - Transfer the appropriate amount of ETH from the multisig wallet to the receiver
-                  - Ensure that the transfer transaction was successful
-                  - Emit an event called "ApproveWithdrawTx"
-    */
-    /* TODO: Create a function called "deposit" that will handle the receiving of ETH to this multisig wallet 
+/* TODO: Create a function called "deposit" that will handle the receiving of ETH to this multisig wallet 
              Make sure to emit an event called "Deposit"
     */
-    // TODO: You may also want to implement a special function called "receive" to handle the receiving of ETH if you choose
-    // modifier onlyOwner()
+// TODO: You may also want to implement a special function called "receive" to handle the receiving of ETH if you choose
+// modifier onlyOwner()
