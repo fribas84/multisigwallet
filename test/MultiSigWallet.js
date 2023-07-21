@@ -3,6 +3,7 @@ const {
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
 describe("MultiSigWallet", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -141,34 +142,136 @@ describe("MultiSigWallet", function () {
       );
     });
     it("Owner 3 can create a Withdraw request", async function () {
-        const { multiSigWallet, otherAccount2 } = await loadFixture(deploy);
-        const initialBalance = await multiSigWallet.getBalance();
-        expect(initialBalance).to.equal(0);
-        const options = { value: ethers.parseEther("5") };
-        await multiSigWallet.deposit(options);
-        const newBalance = await multiSigWallet.getBalance();
-        expect(newBalance).to.greaterThan(initialBalance);
-        expect(
-          await multiSigWallet
-            .connect(otherAccount2)
-            .createdWithdrawTx(otherAccount2.address, newBalance)
-        );
-      });
-    
-      it("A not Owner cannot create a Withdraw request", async function () {
-        const { multiSigWallet, otherAccount3 } = await loadFixture(deploy);
-        const initialBalance = await multiSigWallet.getBalance();
-        expect(initialBalance).to.equal(0);
-        const options = { value: ethers.parseEther("5") };
-        await multiSigWallet.deposit(options);
-        const newBalance = await multiSigWallet.getBalance();
-        expect(newBalance).to.greaterThan(initialBalance);
-        await expect(
-           multiSigWallet
-            .connect(otherAccount3)
-            .createdWithdrawTx(otherAccount3.address, newBalance)
-        ).to.revertedWith("not owner");
-      });
+      const { multiSigWallet, otherAccount2 } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+      expect(
+        await multiSigWallet
+          .connect(otherAccount2)
+          .createdWithdrawTx(otherAccount2.address, newBalance)
+      );
+    });
+
+    it("A not Owner cannot create a Withdraw request", async function () {
+      const { multiSigWallet, otherAccount3 } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+      await expect(
+        multiSigWallet
+          .connect(otherAccount3)
+          .createdWithdrawTx(otherAccount3.address, newBalance)
+      ).to.revertedWith("not owner");
+    });
   });
- 
+  describe("Withdraw request and approve", function () {
+    it("Funds go to destinaton once is approved", async function () {
+      const provider = hre.ethers.provider;
+      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
+        await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const depositValue = ethers.parseEther("1000");
+      const options = { value: depositValue };
+      await multiSigWallet.deposit(options);
+      const accountBalanceAfterdeposit = await provider.getBalance(
+        owner.address
+      );
+      const depositBalance = await multiSigWallet.getBalance();
+      expect(depositBalance).to.greaterThan(initialBalance);
+      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+        owner.address,
+        depositValue
+      );
+      withdrawRequest = withdrawRequest.value;
+      await multiSigWallet.approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount)
+        .approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount2)
+        .approveWithdrawTx(withdrawRequest);
+      expect(await multiSigWallet.getBalance()).to.equal(0);
+      const accountBalanceAfterWithdraw = await provider.getBalance(
+        owner.address
+      );
+      expect(accountBalanceAfterWithdraw).to.greaterThan(
+        accountBalanceAfterdeposit
+      );
+    });
+    it("Partial withdraw", async function () {
+      const provider = hre.ethers.provider;
+      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
+        await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const nonParsedDeposit = 1000;
+      const depositValue = ethers.parseEther(nonParsedDeposit.toString());
+      const halfDepositValue = ethers.parseEther(
+        (nonParsedDeposit / 2).toString()
+      );
+
+      const options = { value: depositValue };
+      await multiSigWallet.deposit(options);
+      const accountBalanceAfterdeposit = await provider.getBalance(
+        owner.address
+      );
+      const depositBalance = await multiSigWallet.getBalance();
+      expect(depositBalance).to.greaterThan(initialBalance);
+      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+        owner.address,
+        halfDepositValue
+      );
+      withdrawRequest = withdrawRequest.value;
+      await multiSigWallet.approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount)
+        .approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount2)
+        .approveWithdrawTx(withdrawRequest);
+      const accountBalanceAfterWithdraw = await provider.getBalance(
+        owner.address
+      );
+      expect(accountBalanceAfterWithdraw).to.greaterThan(
+        accountBalanceAfterdeposit
+      );
+      expect(await multiSigWallet.getBalance()).to.equal(halfDepositValue);
+    });
+
+    it("Not-owner cannot approve a Withdraw TX", async function () {
+      const provider = hre.ethers.provider;
+      const { multiSigWallet, owner, otherAccount, otherAccount3 } =
+        await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const depositValue = ethers.parseEther("1000");
+      const options = { value: depositValue };
+      await multiSigWallet.deposit(options);
+      const accountBalanceAfterdeposit = await provider.getBalance(
+        owner.address
+      );
+      const depositBalance = await multiSigWallet.getBalance();
+      expect(depositBalance).to.greaterThan(initialBalance);
+      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+        owner.address,
+        depositValue
+      );
+      withdrawRequest = withdrawRequest.value;
+      await multiSigWallet.approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount)
+        .approveWithdrawTx(withdrawRequest);
+      await expect(
+        multiSigWallet.connect(otherAccount3).approveWithdrawTx(withdrawRequest)
+      ).to.revertedWith("not owner");
+    });
+  });
 });

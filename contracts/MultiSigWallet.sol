@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
+import "hardhat/console.sol";
 
 /// This error will be thrown whenever the user tries to approve a transaction that does not exist.
 /// @param transactionIndex.
