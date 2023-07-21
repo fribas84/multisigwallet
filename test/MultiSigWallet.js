@@ -57,11 +57,16 @@ describe("MultiSigWallet", function () {
       expect(await multiSigWallet.isOwner(otherAccount.address)).equal(true);
     });
     it("IsOwner should return false for a non-owner address", async function () {
-    const { multiSigWallet, otherAccount3 } =
-        await loadFixture(deploy);
-
+      const { multiSigWallet, otherAccount3 } = await loadFixture(deploy);
       expect(await multiSigWallet.isOwner(otherAccount3.address)).equal(false);
-
-    })
+    });
+  });
+  describe("Deposit and receive", function () {
+    it("An Owner can deposit and balance is change", async function () {
+      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
+        await loadFixture(deploy);
+        
+        await
+    });
   });
 });

@@ -100,6 +100,10 @@ contract MultiSigWallet {
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
 
+    function getBalance() external view returns (uint256){
+        return address(this).balance;
+    }
+    
     receive() external payable {
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
