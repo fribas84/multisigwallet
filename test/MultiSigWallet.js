@@ -102,19 +102,73 @@ describe("MultiSigWallet", function () {
       expect(newBalance).to.greaterThan(initialBalance);
     });
   });
-  describe("Withdraw", function () {
-    it("Owner 1 can create a Withdraw request", async function () {
-      const { multiSigWallet,owner } = await loadFixture(deploy);
+  describe("Withdraw request creation", function () {
+    it("Cannot create a widthdaw request bigger than balance", async function () {
+      const { multiSigWallet, owner } = await loadFixture(deploy);
       const initialBalance = await multiSigWallet.getBalance();
       expect(initialBalance).to.equal(0);
       const options = { value: ethers.parseEther("5") };
       await multiSigWallet.deposit(options);
       const newBalance = await multiSigWallet.getBalance();
       expect(newBalance).to.greaterThan(initialBalance);
-      expect(await multiSigWallet.createdWithdrawTx(owner.address,newBalance))
+      expect(await multiSigWallet.createdWithdrawTx(owner.address, 10));
     });
-    it("Owner 2 can create a Withdraw request", async function () {});
-    it("Owner 3 can create a Withdraw request", async function () {});
-    it("A not Owner cannot create a Withdraw request", async function () {});
+
+    it("Owner 1 can create a Withdraw request", async function () {
+      const { multiSigWallet, owner } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+      expect(
+        await multiSigWallet.createdWithdrawTx(owner.address, newBalance)
+      ).to.revertedWith("invalid amount to withdraw");
+    });
+    it("Owner 2 can create a Withdraw request", async function () {
+      const { multiSigWallet, otherAccount } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+      expect(
+        await multiSigWallet
+          .connect(otherAccount)
+          .createdWithdrawTx(otherAccount.address, newBalance)
+      );
+    });
+    it("Owner 3 can create a Withdraw request", async function () {
+        const { multiSigWallet, otherAccount2 } = await loadFixture(deploy);
+        const initialBalance = await multiSigWallet.getBalance();
+        expect(initialBalance).to.equal(0);
+        const options = { value: ethers.parseEther("5") };
+        await multiSigWallet.deposit(options);
+        const newBalance = await multiSigWallet.getBalance();
+        expect(newBalance).to.greaterThan(initialBalance);
+        expect(
+          await multiSigWallet
+            .connect(otherAccount2)
+            .createdWithdrawTx(otherAccount2.address, newBalance)
+        );
+      });
+    
+      it("A not Owner cannot create a Withdraw request", async function () {
+        const { multiSigWallet, otherAccount3 } = await loadFixture(deploy);
+        const initialBalance = await multiSigWallet.getBalance();
+        expect(initialBalance).to.equal(0);
+        const options = { value: ethers.parseEther("5") };
+        await multiSigWallet.deposit(options);
+        const newBalance = await multiSigWallet.getBalance();
+        expect(newBalance).to.greaterThan(initialBalance);
+        await expect(
+           multiSigWallet
+            .connect(otherAccount3)
+            .createdWithdrawTx(otherAccount3.address, newBalance)
+        ).to.revertedWith("not owner");
+      });
   });
+ 
 });
