@@ -61,6 +61,10 @@ contract MultiSigWallet {
         quorumRequired = _quorumRequired;
     }
 
+    function getOwners() view external returns( address[] memory){
+        return owners;
+    } 
+
     function createdWithdrawTx(
         address _to,
         uint256 _amount
