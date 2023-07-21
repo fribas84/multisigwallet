@@ -103,7 +103,16 @@ describe("MultiSigWallet", function () {
     });
   });
   describe("Withdraw", function () {
-    it("Owner 1 can create a Withdraw request", async function () {});
+    it("Owner 1 can create a Withdraw request", async function () {
+      const { multiSigWallet,owner } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+      expect(await multiSigWallet.createdWithdrawTx(owner.address,newBalance))
+    });
     it("Owner 2 can create a Withdraw request", async function () {});
     it("Owner 3 can create a Withdraw request", async function () {});
     it("A not Owner cannot create a Withdraw request", async function () {});

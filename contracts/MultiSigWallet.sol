@@ -69,7 +69,8 @@ contract MultiSigWallet {
         address _to,
         uint256 _amount
     ) external onlyOwner returns (uint256) {
-        require(_amount > 0, "invalid amount to withdraw");
+        uint256 contractBalance = address(this).balance;
+        require(_amount > 0 && _amount <= contractBalance, "invalid amount to withdraw");
         uint256 transactionIndex = widthdrawTxs.length;
         widthdrawTxs.push(WidthdrawTxStruct(_to, _amount, 0, false));
         emit CreatedWithdrawTx(msg.sender, transactionIndex, _to, _amount);
