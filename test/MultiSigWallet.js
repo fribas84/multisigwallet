@@ -29,6 +29,23 @@ describe("MultiSigWallet", function () {
   }
 
   describe("Deployment and Owners validation", function () {
+    it("Contract should not be deployed with invalid owners", async function () {
+      const MultiSigWallet = await ethers.getContractFactory("MultiSigWallet");
+      await expect(MultiSigWallet.deploy([], 3)).to.revertedWith(
+        "At least one owner is required"
+      );
+    });
+    it("Contract should not be deployed with invalid quorum number", async function () {
+      const [owner, otherAccount, otherAccount2] = await ethers.getSigners();
+      const MultiSigWallet = await ethers.getContractFactory("MultiSigWallet");
+
+      await expect(
+        MultiSigWallet.deploy(
+          [owner.address, otherAccount.address, otherAccount2.address],
+          10
+        )
+      ).to.revertedWith("Invalid number of required quorum");
+    });
     it("Quorom Required should be equal to 3", async function () {
       const { multiSigWallet } = await loadFixture(deploy);
       expect(await multiSigWallet.quorumRequired()).to.equal(3);
@@ -61,12 +78,34 @@ describe("MultiSigWallet", function () {
       expect(await multiSigWallet.isOwner(otherAccount3.address)).equal(false);
     });
   });
-  describe("Deposit and receive", function () {
-    it("An Owner can deposit and balance is change", async function () {
-      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
-        await loadFixture(deploy);
-        
-        await
+  describe("Deposit", function () {
+    it("Initial balance should be equal to 0", async function () {
+      const { multiSigWallet } = await loadFixture(deploy);
+      expect(await multiSigWallet.getBalance()).to.equal(0);
     });
+    it("An Owner should deposit and balance increase", async function () {
+      const { multiSigWallet } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+    });
+    it("Not Owner account can deposit", async function () {
+      const { multiSigWallet, otherAccount3 } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const options = { value: ethers.parseEther("5") };
+      await multiSigWallet.connect(otherAccount3).deposit(options);
+      const newBalance = await multiSigWallet.getBalance();
+      expect(newBalance).to.greaterThan(initialBalance);
+    });
+  });
+  describe("Withdraw", function () {
+    it("Owner 1 can create a Withdraw request", async function () {});
+    it("Owner 2 can create a Withdraw request", async function () {});
+    it("Owner 3 can create a Withdraw request", async function () {});
+    it("A not Owner cannot create a Withdraw request", async function () {});
   });
 });

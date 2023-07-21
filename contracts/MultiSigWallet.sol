@@ -68,11 +68,12 @@ contract MultiSigWallet {
     function createdWithdrawTx(
         address _to,
         uint256 _amount
-    ) external onlyOwner {
+    ) external onlyOwner returns (uint256) {
         require(_amount > 0, "invalid amount to withdraw");
         uint256 transactionIndex = widthdrawTxs.length;
         widthdrawTxs.push(WidthdrawTxStruct(_to, _amount, 0, false));
         emit CreatedWithdrawTx(msg.sender, transactionIndex, _to, _amount);
+        return transactionIndex;
     }
 
     function approveWithdrawTx(
@@ -103,7 +104,7 @@ contract MultiSigWallet {
     function getBalance() external view returns (uint256){
         return address(this).balance;
     }
-    
+
     receive() external payable {
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
