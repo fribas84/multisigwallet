@@ -122,7 +122,6 @@ contract MultiSigWallet {
         }
         _;
     }
-    // TODO: Declare a function modifier called "transactionNotSent" that ensures that transaction has not yet been sent
     modifier transactionNotSent(uint256 _transactionIndex) {
         if (widthdrawTxs[_transactionIndex].sent) {
             revert TxAlreadySent(_transactionIndex);
