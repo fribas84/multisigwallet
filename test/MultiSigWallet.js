@@ -172,7 +172,7 @@ describe("MultiSigWallet", function () {
     });
   });
   describe("Withdraw request and approve", function () {
-    it("Funds go to destinaton once is approved", async function () {
+    it("Funds are sent to destinaton once is approved", async function () {
       const provider = hre.ethers.provider;
       const { multiSigWallet, owner, otherAccount, otherAccount2 } =
         await loadFixture(deploy);
@@ -272,6 +272,102 @@ describe("MultiSigWallet", function () {
       await expect(
         multiSigWallet.connect(otherAccount3).approveWithdrawTx(withdrawRequest)
       ).to.revertedWith("not owner");
+    });
+    it("Cannot Approve an existing widthdraw", async function () {
+      const provider = hre.ethers.provider;
+      const { multiSigWallet, owner, otherAccount } = await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const depositValue = ethers.parseEther("1000");
+      const options = { value: depositValue };
+      await multiSigWallet.deposit(options);
+      const accountBalanceAfterdeposit = await provider.getBalance(
+        owner.address
+      );
+      const depositBalance = await multiSigWallet.getBalance();
+      expect(depositBalance).to.greaterThan(initialBalance);
+      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+        owner.address,
+        depositValue
+      );
+      withdrawRequest = withdrawRequest.value;
+      await multiSigWallet.approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount)
+        .approveWithdrawTx(withdrawRequest);
+      await expect(
+        multiSigWallet.connect(otherAccount).approveWithdrawTx(10)
+      ).to.revertedWithCustomError(multiSigWallet, "TxNotExists");
+    });
+    it("Cannot reapprove an allready commited withdraw", async function () {
+      const provider = hre.ethers.provider;
+      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
+        await loadFixture(deploy);
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const depositValue = ethers.parseEther("1000");
+      const options = { value: depositValue };
+      await multiSigWallet.deposit(options);
+      const accountBalanceAfterdeposit = await provider.getBalance(
+        owner.address
+      );
+      const depositBalance = await multiSigWallet.getBalance();
+      expect(depositBalance).to.greaterThan(initialBalance);
+      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+        owner.address,
+        depositValue
+      );
+      withdrawRequest = withdrawRequest.value;
+      await multiSigWallet.approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount)
+        .approveWithdrawTx(withdrawRequest);
+      await expect(
+        multiSigWallet.connect(otherAccount).approveWithdrawTx(withdrawRequest)
+      ).to.revertedWithCustomError(multiSigWallet, "TxAlreadyApproved");
+    });
+
+    it("Cannot approved a transaction that was already sent", async function () {
+      const [owner, otherAccount, otherAccount2] = await ethers.getSigners();
+
+      const MultiSigWallet = await ethers.getContractFactory("MultiSigWallet");
+      const multiSigWallet = await MultiSigWallet.deploy(
+        [owner.address, otherAccount.address, otherAccount2.address],
+        2
+      );
+      const provider = hre.ethers.provider;
+
+      const initialBalance = await multiSigWallet.getBalance();
+      expect(initialBalance).to.equal(0);
+      const depositValue = ethers.parseEther("1000");
+      const options = { value: depositValue };
+      await multiSigWallet.deposit(options);
+      const accountBalanceAfterdeposit = await provider.getBalance(
+        owner.address
+      );
+      const depositBalance = await multiSigWallet.getBalance();
+      expect(depositBalance).to.greaterThan(initialBalance);
+      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+        owner.address,
+        depositValue
+      );
+      withdrawRequest = withdrawRequest.value;
+      await multiSigWallet.approveWithdrawTx(withdrawRequest);
+      await multiSigWallet
+        .connect(otherAccount)
+        .approveWithdrawTx(withdrawRequest);
+
+      expect(await multiSigWallet.getBalance()).to.equal(0);
+      const accountBalanceAfterWithdraw = await provider.getBalance(
+        owner.address
+      );
+      expect(accountBalanceAfterWithdraw).to.greaterThan(
+        accountBalanceAfterdeposit
+      );
+
+      await expect(
+        multiSigWallet.connect(otherAccount2).approveWithdrawTx(withdrawRequest)
+      ).to.revertedWithCustomError(multiSigWallet, "TxAlreadySent");
     });
   });
 });
