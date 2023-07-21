@@ -10,7 +10,8 @@ describe("MultiSigWallet", function () {
   // and reset Hardhat Network to that snapshot in every test.
   async function deploy() {
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount, otherAccount2,otherAccount3] = await ethers.getSigners();
+    const [owner, otherAccount, otherAccount2, otherAccount3] =
+      await ethers.getSigners();
 
     const MultiSigWallet = await ethers.getContractFactory("MultiSigWallet");
     const multiSigWallet = await MultiSigWallet.deploy(
@@ -18,35 +19,49 @@ describe("MultiSigWallet", function () {
       3
     );
 
-    return { multiSigWallet, owner, otherAccount, otherAccount2,otherAccount3 };
+    return {
+      multiSigWallet,
+      owner,
+      otherAccount,
+      otherAccount2,
+      otherAccount3,
+    };
   }
 
-  describe("Deployment", function () {
+  describe("Deployment and Owners validation", function () {
     it("Quorom Required should be equal to 3", async function () {
       const { multiSigWallet } = await loadFixture(deploy);
       expect(await multiSigWallet.quorumRequired()).to.equal(3);
     });
 
-    it("Owners should be 3", async function(){
-        const { multiSigWallet } = await loadFixture(deploy);
-        const owners = await multiSigWallet.getOwners()
-        expect(owners.length).to.equal(3);
-    })
+    it("Owners should be 3", async function () {
+      const { multiSigWallet } = await loadFixture(deploy);
+      const owners = await multiSigWallet.getOwners();
+      expect(owners.length).to.equal(3);
+    });
 
     it("Owners should be first ether signers", async function () {
-        const { multiSigWallet,owner,otherAccount,otherAccount2 } = await loadFixture(deploy);
-        const owners = await multiSigWallet.getOwners()
-        expect(owners).to.include(owner.address);
-        expect(owners).to.include(otherAccount.address);
-        expect(owners).to.include(otherAccount2.address);
-    })
+      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
+        await loadFixture(deploy);
+      const owners = await multiSigWallet.getOwners();
+      expect(owners).to.include(owner.address);
+      expect(owners).to.include(otherAccount.address);
+      expect(owners).to.include(otherAccount2.address);
+    });
 
     it("IsOwner should reply true for owners", async function () {
-        const { multiSigWallet,owner,otherAccount,otherAccount2 } = await loadFixture(deploy);
-        console.log(await multiSigWallet.isOwner(owner.address));
-        await expect(multiSigWallet.isOwner(owner.address)).equal(true);
+      const { multiSigWallet, owner, otherAccount, otherAccount2 } =
+        await loadFixture(deploy);
+      expect(await multiSigWallet.isOwner(owner.address)).equal(true);
+      expect(await multiSigWallet.isOwner(otherAccount2.address)).equal(true);
+      expect(await multiSigWallet.isOwner(otherAccount.address)).equal(true);
+    });
+    it("IsOwner should return false for a non-owner address", async function () {
+    const { multiSigWallet, otherAccount3 } =
+        await loadFixture(deploy);
+
+      expect(await multiSigWallet.isOwner(otherAccount3.address)).equal(false);
 
     })
-
   });
 });
