@@ -108,10 +108,13 @@ contract MultiSigWallet {
     }
 
     receive() external payable {
+        console.log("Inside receive ","Value: ", msg.value);
+        console.log("Balance check inside receive: ",address(this).balance);
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
 
     fallback() external payable {
+        console.log("fallback");
         emit Deposit(msg.sender,msg.value,address(this).balance);
     }
 

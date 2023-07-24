@@ -19,7 +19,7 @@ describe("MultiSigWallet", function () {
       [owner.address, otherAccount.address, otherAccount2.address],
       3
     );
-
+      
     return {
       multiSigWallet,
       owner,
@@ -328,13 +328,13 @@ describe("MultiSigWallet", function () {
     });
 
     it("Cannot approved a transaction that was already sent", async function () {
-      const [owner, otherAccount, otherAccount2] = await ethers.getSigners();
+        const [owner, otherAccount, otherAccount2] = await ethers.getSigners();
 
-      const MultiSigWallet = await ethers.getContractFactory("MultiSigWallet");
-      const multiSigWallet = await MultiSigWallet.deploy(
-        [owner.address, otherAccount.address, otherAccount2.address],
-        2
-      );
+        const MultiSigWallet = await ethers.getContractFactory("MultiSigWallet");
+        const multiSigWallet = await MultiSigWallet.deploy(
+          [owner.address, otherAccount.address, otherAccount2.address],
+          2
+        );
       const provider = hre.ethers.provider;
 
       const initialBalance = await multiSigWallet.getBalance();
@@ -368,6 +368,25 @@ describe("MultiSigWallet", function () {
       await expect(
         multiSigWallet.connect(otherAccount2).approveWithdrawTx(withdrawRequest)
       ).to.revertedWithCustomError(multiSigWallet, "TxAlreadySent");
+    });
+  });
+  describe("Fallback and Receive", function () {
+    it("Receive", async function () {
+      const { multiSigWallet } = await loadFixture(deploy);
+
+      const provider = hre.ethers.provider;
+      const depositValue = ethers.parseEther("1000");
+      const initialBalance = await multiSigWallet.getBalance();
+      console.log("Initial Balance: ", initialBalance);
+      console.log(multiSigWallet.target);
+      await provider.call({
+        to: multiSigWallet.target,
+        value: depositValue,
+      });
+
+      const newBalance = await multiSigWallet.getBalance();
+      console.log("Final Balance: ", newBalance); 
+      expect(newBalance).to.greaterThan(initialBalance);
     });
   });
 });
