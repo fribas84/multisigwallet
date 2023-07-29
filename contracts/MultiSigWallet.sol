@@ -44,7 +44,7 @@ contract MultiSigWallet {
 
     mapping(uint => mapping(address => bool)) isApproved;
 
-    WidthdrawTxStruct[] public widthdrawTxs;
+    WidthdrawTxStruct[] private widthdrawTxs;
 
     constructor(address[] memory _owners, uint256 _quorumRequired) {
         require(_owners.length > 0, "At least one owner is required");
@@ -66,6 +66,9 @@ contract MultiSigWallet {
         return owners;
     } 
 
+    function getWithdrawRequest() view external returns(WidthdrawTxStruct[] memory){
+        return widthdrawTxs;
+    }
     function createdWithdrawTx(
         address _to,
         uint256 _amount
