@@ -44,7 +44,7 @@ contract MultiSigWallet {
 
     mapping(uint => mapping(address => bool)) isApproved;
 
-    WidthdrawTxStruct[] private widthdrawTxs;
+    WidthdrawTxStruct[] public widthdrawTxs;
 
     constructor(address[] memory _owners, uint256 _quorumRequired) {
         require(_owners.length > 0, "At least one owner is required");
