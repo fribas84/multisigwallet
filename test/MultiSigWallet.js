@@ -112,7 +112,7 @@ describe("MultiSigWallet", function () {
       await multiSigWallet.deposit(options);
       const newBalance = await multiSigWallet.getBalance();
       expect(newBalance).to.greaterThan(initialBalance);
-      expect(await multiSigWallet.createdWithdrawTx(owner.address, 10));
+      expect(await multiSigWallet.createWithdrawTx(owner.address, 10));
     });
 
     it("Owner 1 can create a Withdraw request", async function () {
@@ -124,7 +124,7 @@ describe("MultiSigWallet", function () {
       const newBalance = await multiSigWallet.getBalance();
       expect(newBalance).to.greaterThan(initialBalance);
       expect(
-        await multiSigWallet.createdWithdrawTx(owner.address, newBalance)
+        await multiSigWallet.createWithdrawTx(owner.address, newBalance)
       ).to.revertedWith("invalid amount to withdraw");
     });
     it("Owner 2 can create a Withdraw request", async function () {
@@ -138,7 +138,7 @@ describe("MultiSigWallet", function () {
       expect(
         await multiSigWallet
           .connect(otherAccount)
-          .createdWithdrawTx(otherAccount.address, newBalance)
+          .createWithdrawTx(otherAccount.address, newBalance)
       );
     });
     it("Owner 3 can create a Withdraw request", async function () {
@@ -152,7 +152,7 @@ describe("MultiSigWallet", function () {
       expect(
         await multiSigWallet
           .connect(otherAccount2)
-          .createdWithdrawTx(otherAccount2.address, newBalance)
+          .createWithdrawTx(otherAccount2.address, newBalance)
       );
     });
 
@@ -167,7 +167,7 @@ describe("MultiSigWallet", function () {
       await expect(
         multiSigWallet
           .connect(otherAccount3)
-          .createdWithdrawTx(otherAccount3.address, newBalance)
+          .createWithdrawTx(otherAccount3.address, newBalance)
       ).to.revertedWith("not owner");
     });
   });
@@ -186,7 +186,7 @@ describe("MultiSigWallet", function () {
       );
       const depositBalance = await multiSigWallet.getBalance();
       expect(depositBalance).to.greaterThan(initialBalance);
-      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+      let withdrawRequest = await multiSigWallet.createWithdrawTx(
         owner.address,
         depositValue
       );
@@ -225,7 +225,7 @@ describe("MultiSigWallet", function () {
       );
       const depositBalance = await multiSigWallet.getBalance();
       expect(depositBalance).to.greaterThan(initialBalance);
-      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+      let withdrawRequest = await multiSigWallet.createWithdrawTx(
         owner.address,
         halfDepositValue
       );
@@ -260,7 +260,7 @@ describe("MultiSigWallet", function () {
       );
       const depositBalance = await multiSigWallet.getBalance();
       expect(depositBalance).to.greaterThan(initialBalance);
-      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+      let withdrawRequest = await multiSigWallet.createWithdrawTx(
         owner.address,
         depositValue
       );
@@ -286,7 +286,7 @@ describe("MultiSigWallet", function () {
       );
       const depositBalance = await multiSigWallet.getBalance();
       expect(depositBalance).to.greaterThan(initialBalance);
-      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+      let withdrawRequest = await multiSigWallet.createWithdrawTx(
         owner.address,
         depositValue
       );
@@ -313,7 +313,7 @@ describe("MultiSigWallet", function () {
       );
       const depositBalance = await multiSigWallet.getBalance();
       expect(depositBalance).to.greaterThan(initialBalance);
-      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+      let withdrawRequest = await multiSigWallet.createWithdrawTx(
         owner.address,
         depositValue
       );
@@ -347,7 +347,7 @@ describe("MultiSigWallet", function () {
       );
       const depositBalance = await multiSigWallet.getBalance();
       expect(depositBalance).to.greaterThan(initialBalance);
-      let withdrawRequest = await multiSigWallet.createdWithdrawTx(
+      let withdrawRequest = await multiSigWallet.createWithdrawTx(
         owner.address,
         depositValue
       );

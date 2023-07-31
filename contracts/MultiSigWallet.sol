@@ -17,7 +17,7 @@ error TxAlreadySent(uint256 transactionIndex);
 contract MultiSigWallet {
     event Deposit(address indexed sender, uint256 amount, uint256 balance);
 
-    event CreatedWithdrawTx(
+    event CreateWithdrawTx(
         address indexed owner,
         uint256 indexed transactionIndex,
         address indexed to,
@@ -69,7 +69,7 @@ contract MultiSigWallet {
     function getWithdrawRequest() view external returns(WidthdrawTxStruct[] memory){
         return widthdrawTxs;
     }
-    function createdWithdrawTx(
+    function createWithdrawTx(
         address _to,
         uint256 _amount
     ) external onlyOwner returns (uint256) {
@@ -77,7 +77,7 @@ contract MultiSigWallet {
         require(_amount > 0 && _amount <= contractBalance, "invalid amount to withdraw");
         uint256 transactionIndex = widthdrawTxs.length;
         widthdrawTxs.push(WidthdrawTxStruct(_to, _amount, 0, false));
-        emit CreatedWithdrawTx(msg.sender, transactionIndex, _to, _amount);
+        emit CreateWithdrawTx(msg.sender, transactionIndex, _to, _amount);
         return transactionIndex;
     }
 
