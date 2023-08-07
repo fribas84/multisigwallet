@@ -7,40 +7,36 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
+        runs: 200,
+      },
+    },
   },
-  paths:{
-    sources: './contracts',
-    artifacts: './src/artifacts'
+  paths: {
+    sources: "./contracts",
+    artifacts: "./src/artifacts",
   },
-  defaultNetwork: 'hardhat',
-  networks:{
-    hardhat:{
+  defaultNetwork: "hardhat",
+  networks: {
+    hardhat: {
       chainId: 31337,
       mining: {
         auto: false,
-        interval: 5000
-      }
-    }
-  }
+        interval: 5000,
+      },
+    },
+  },
 };
-
-
 
 // Task to list accounts and their balance from HardHat Node
 task(
-  'accounts',
-  'Prints the list of accounts and their balances',
-  async(taskArgs, hre) =>{
+  "accounts",
+  "Prints the list of accounts and their balances",
+  async (taskArgs, hre) => {
     const accounts = await hre.ethers.getSigners();
-    for(const account of accounts) {
+    for (const account of accounts) {
       const provider = hre.ethers.provider;
       const balance = await provider.getBalance(account.address);
-      console.log(account.address, ": ", balance);
+      console.log(account.address, ": ", balance, account);
     }
   }
-)
-
-//deploy testnets 
+);
